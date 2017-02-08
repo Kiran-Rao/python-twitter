@@ -1,25 +1,31 @@
+"""
+Twitter module
+Includes the Twitter class and ui interface for testing
+"""
+
 import json
 from pyramda import pick
 from requests import get, RequestException
 from requests_oauthlib import OAuth1
 
 
-class Twitter:
+class Twitter(object):
     """
     Twitter class.
-    Use request method to call
+    Use request method to return time counted pairs of the keyword in
+    each users' last N tweets
     """
-    CONSUMER_KEY="nLA0iI2zUQvg01B4jETGGj6wt"
-    CONSUMER_SECRET="2bKLqaBFHW860DAOYDfq66gtr7ge09oa8NmQWFynx2i4zsLGHx"
-    TOKEN="249814405-t3jbE1NIXXz7wZiry0L2RGLBacK7QCaxCMCtMfea"
-    TOKEN_SECRET="1Xe5xqi5lNNL9kN7NqUOG3XHcGgosTYSj8CCAeVA2mFg1"
+    CONSUMER_KEY = "nLA0iI2zUQvg01B4jETGGj6wt"
+    CONSUMER_SECRET = "2bKLqaBFHW860DAOYDfq66gtr7ge09oa8NmQWFynx2i4zsLGHx"
+    TOKEN = "249814405-t3jbE1NIXXz7wZiry0L2RGLBacK7QCaxCMCtMfea"
+    TOKEN_SECRET = "1Xe5xqi5lNNL9kN7NqUOG3XHcGgosTYSj8CCAeVA2mFg1"
 
-    BASE_URL="https://api.twitter.com/1.1/statuses/user_timeline.json"
+    BASE_URL = "https://api.twitter.com/1.1/statuses/user_timeline.json"
 
 
     @staticmethod
     def _remove_at_symbol(handles):
-        return [h[1:] if h[0] =="@" else h for h in handles]
+        return [h[1:] if h[0] == "@" else h for h in handles]
 
     @classmethod
     def _create_auth_header(cls):
@@ -30,15 +36,20 @@ class Twitter:
             cls.TOKEN_SECRET)
 
     @staticmethod
-    def _create_params(handle, n):
-        return {"screen_name": handle, "count": n, "trim_user": "true"}
+    def _create_params(handle, count):
+        return {"screen_name": handle, "count": count, "trim_user": "true"}
 
     @staticmethod
     def _count_instances(stripped_tweets, keyword):
         return [[tweet["created_at"], tweet["text"].count(keyword)] for tweet in stripped_tweets]
 
     @classmethod
-    def request(cls, handles, keyword, n):
+    def request(cls, handles, keyword, count):
+        """
+        @param handles: List of twitter handles
+        @param keyword: Keyword to search for
+        @param count: Number of tweets per handle to search
+        """
         handles_without_at = cls._remove_at_symbol(handles)
         auth_header = cls._create_auth_header()
         time_counted_pairs = []
@@ -47,14 +58,14 @@ class Twitter:
             try:
                 response = get(
                     cls.BASE_URL,
-                    params=cls._create_params(handle, n),
+                    params=cls._create_params(handle, count),
                     auth=auth_header)
 
                 if response.status_code != 200:
                     raise RequestException
 
-            except RequestException as e:
-                print(e)
+            except RequestException as err:
+                print(err)
                 continue
 
             raw_tweets = json.loads(response.text)
@@ -64,10 +75,10 @@ class Twitter:
         return time_counted_pairs
 
 if __name__ == "__main__":
-    handles = raw_input("Please enter a list of twitter handles separated by spaces: ").split()
-    keyword = raw_input("Please enter keyword or hashtag: ")
-    n = raw_input("Please enter the number of tweets to search for: ")
+    HANDLES = raw_input("Please enter a list of twitter handles separated by spaces: ").split()
+    KEYWORD = raw_input("Please enter keyword or hashtag: ")
+    COUNT = raw_input("Please enter the number of tweets to search for: ")
 
-    time_counted_pairs = Twitter.request(handles, keyword, n)
-    total = sum(map(lambda x: x[1], time_counted_pairs))
-    print([total, time_counted_pairs])
+    TIME_COUNTED_PAIRS = Twitter.request(HANDLES, KEYWORD, COUNT)
+    TOTAL_OCCURANCES = sum(tcp[1] for tcp in TIME_COUNTED_PAIRS)
+    print([TOTAL_OCCURANCES, TIME_COUNTED_PAIRS])
