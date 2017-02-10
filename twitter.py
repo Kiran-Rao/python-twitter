@@ -62,15 +62,14 @@ class Twitter(object):
                     auth=auth_header)
 
                 if response.status_code != 200:
-                    raise RequestException
+                    raise RequestException(response.status_code)
+
+                raw_tweets = json.loads(response.text)
+                stripped_tweets = map(pick(["text", "created_at"]), raw_tweets)
+                time_counted_pairs.extend(cls._count_instances(stripped_tweets, keyword))
 
             except RequestException as err:
                 print(err)
-                continue
-
-            raw_tweets = json.loads(response.text)
-            stripped_tweets = map(pick(["text", "created_at"]), raw_tweets)
-            time_counted_pairs.extend(cls._count_instances(stripped_tweets, keyword))
 
         return time_counted_pairs
 
