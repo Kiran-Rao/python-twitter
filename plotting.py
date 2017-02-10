@@ -11,8 +11,8 @@ if __name__ == "__main__":
     KEYWORD = raw_input("Please enter keyword or hashtag: ")
     COUNT = raw_input("Please enter the number of tweets to search for: ")
 
-    TIME_COUNTED_PAIRS = Twitter.request(HANDLES, KEYWORD, COUNT)
-    COUNT = [pair[1] for pair in TIME_COUNTED_PAIRS]
+    PAIRS = Twitter.request(HANDLES, KEYWORD, COUNT)
+    COUNT = [pair[1] for pair in PAIRS]
 
     plt.plot(COUNT)
     plt.show()

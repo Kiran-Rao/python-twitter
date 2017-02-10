@@ -4,7 +4,6 @@ Includes the Twitter class and ui interface for testing
 """
 
 import json
-from pyramda import pick
 from requests import get, RequestException
 from requests_oauthlib import OAuth1
 
@@ -40,8 +39,8 @@ class Twitter(object):
         return {"screen_name": handle, "count": count, "trim_user": "true"}
 
     @staticmethod
-    def _count_instances(stripped_tweets, keyword):
-        return [[tweet["created_at"], tweet["text"].count(keyword)] for tweet in stripped_tweets]
+    def _count_instances(raw_tweets, keyword):
+        return [[tweet["created_at"], tweet["text"].count(keyword)] for tweet in raw_tweets]
 
     @classmethod
     def request(cls, handles, keyword, count):
@@ -65,8 +64,7 @@ class Twitter(object):
                     raise RequestException(response.status_code)
 
                 raw_tweets = json.loads(response.text)
-                stripped_tweets = map(pick(["text", "created_at"]), raw_tweets)
-                time_counted_pairs.extend(cls._count_instances(stripped_tweets, keyword))
+                time_counted_pairs.extend(cls._count_instances(raw_tweets, keyword))
 
             except RequestException as err:
                 print(err)
