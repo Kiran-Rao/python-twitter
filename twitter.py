@@ -22,10 +22,6 @@ class Twitter(object):
     BASE_URL = "https://api.twitter.com/1.1/statuses/user_timeline.json"
 
 
-    @staticmethod
-    def _remove_at_symbol(handles):
-        return [h[1:] if h[0] == "@" else h for h in handles]
-
     @classmethod
     def _create_auth_header(cls):
         return OAuth1(
@@ -36,7 +32,8 @@ class Twitter(object):
 
     @staticmethod
     def _create_params(handle, count):
-        return {"screen_name": handle, "count": count, "trim_user": "true"}
+        handle_no_hat = handle[1:] if handle[0] == "@" else handle
+        return {"screen_name": handle_no_hat, "count": count, "trim_user": "true"}
 
     @staticmethod
     def _count_instances(raw_tweets, keyword):
@@ -49,11 +46,10 @@ class Twitter(object):
         @param keyword: Keyword to search for
         @param count: Number of tweets per handle to search
         """
-        handles_without_at = cls._remove_at_symbol(handles)
         auth_header = cls._create_auth_header()
         time_counted_pairs = []
 
-        for handle in handles_without_at:
+        for handle in handles:
             try:
                 response = get(
                     cls.BASE_URL,
